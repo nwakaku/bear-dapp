@@ -1,39 +1,54 @@
 'reach 0.1';
-'use strict';
 
 export const main = Reach.App(() => {
-  const A = Participant('Alice', {
-    request: UInt,
-    info: Bytes(128),
+  setOptions({ untrustworthyMaps: true });
+  const A = Participant('Admin', {
+    approve: Fun([Address], Bool),
   });
-  const B = Participant('Bob', {
-    want: Fun([UInt], Null),
-    got: Fun([Bytes(128)], Null),
+  const B = ParticipantClass('Bob', {
+    request: Fun([], Null),
+    notify: Fun([Address], Null),
   });
   init();
 
-  A.only(() => {
-    const request = declassify(interact.request); });
-    A.publish(request);
+  // A.only(() => {
+  //   const meta = declassify(interact.meta); });
+  // A.publish(meta);
+  // XXX expose meta as a view
+  A.publish()
+  const holdersM = new Set();
+  // XXX expose holdersM.member as a view
+
+  var [] = [];
+  invariant( balance() == 0 );
+  while ( true ) {
     commit();
 
-  B.only(() => {
-    interact.want(request); 
-  });
-  B.pay(request);
-  commit()
+    // XXX Right now, the Bs and admin interact in a synchronized manner.
+    // Instead, Bs could be free to add themselves to the "wantM" set (if
+    // they aren't in holdersM) and the admin can come in later and move things
+    // from "wantM" to "holdersM"
 
-  A.only(() => {
-    const info = declassify(interact.info);
-  });
-  A.publish(info);
-  transfer(request).to(A);
+    B.only(() => {
+      declassify(interact.request());
+      assume(! holdersM.member(this));
+    });
+    B.publish()
+    const requester = this;
+    require(! holdersM.member(requester));
+    commit();
+
+    // A.only(() => {
+    //   const okay = declassify(interact.approve(requester));
+    // });
+    // A.publish(okay);
+    A.publish()
+    holdersM.insert(requester);
+    // }
+    B.interact.notify(requester);
+    continue;
+  }
   commit();
 
-  B.only(() => {
-    interact.got(info);
-  });
   exit();
-
-
-  })
+});
