@@ -5,7 +5,7 @@ export const main = Reach.App(() => {
   const A = Participant('Admin', {
     approve: Fun([Address], Bool),
   });
-  const B = ParticipantClass('Bob', {
+  const B = ParticipantClass('Requester', {
     request: Fun([], Null),
     notify: Fun([Address], Null),
   });

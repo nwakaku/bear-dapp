@@ -4,24 +4,26 @@ const stdlib = loadStdlib(process.env);
 
 const startingBalance = stdlib.parseCurrency(100);
 
-const [ accAlice, accBob ] =
+const [ accAlice, accRequester ] =
   await stdlib.newTestAccounts(2, startingBalance);
-const zorkmid = await stdlib.launchToken(accAlice, "zorkmid", "ZMD");
-const gil = await stdlib.launchToken(accAlice)
+
+let ctc = null;
+ctc = accAlice.contract(backend);
+console.log('Deploying contract...');
+
+
+
 console.log('Hello, Everyone welcome!');
 
 
 const addrs = {
   'Admin': accAlice.getAddress(),
-  'Bob': accBob.getAddress(),
-  // '1': accUnknow1.getAddress(),
-  // '2': accUnknow2.getAddress(),
-  // '3': accUnknow3.getAddress()
+  'Requester': accRequester.getAddress(),
 };
 
 console.log('Launching...');
 const ctcAlice = accAlice.contract(backend);
-// const ctcBob = accBob.contract(backend, ctcAlice.getInfo());
+// const ctcRequester = accRequester.contract(backend, ctcAlice.getInfo());
 const users = await stdlib.newTestAccounts(3, startingBalance);
 
 const fmt = (x) => stdlib.formatCurrency(x, 4);
@@ -54,12 +56,13 @@ const rsvp = async (whoi) => {
   const who = users[whoi];
   const ctc = ctcWho(whoi);
   console.log(stdlib.formatAddress(who), `register for the board balance: ${fmt(await stdlib.balanceOf(who))} ` );
-  await ctc.p.Bob.request;
+  await ctc.p.Requester.request;
 };
 const passed = async (ctc, whoi) => {
   const who = users[whoi];
   console.log(stdlib.formatAddress(who), 'was whitelisted');
-  await ctc.p.Bob.notify;
+  await ctc.p.Requester.notify;
+  
 };
 const whitelist = (whoi) => passed(ctcAlice, whoi);
 const bad_whitelist = () => passed(ctcWho(whoi), whoi);
@@ -78,6 +81,6 @@ await whitelist(0)
 await whitelist(1)
 // await willError(() => whitelist(4))
 await willError(() => bad_whitelist(2))
-await whitelist(2)
+// await whitelist(2)
 
-console.log('Goodbye, Alice and Bob!');
+console.log('Goodbye, Admin and Requester!');
